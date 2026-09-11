@@ -14,6 +14,5 @@ export const config = {
     "/exams/:path*",
     "/notices/:path*",
     "/reports/:path*",
-    "/ai-assistant/:path*",
   ],
 };

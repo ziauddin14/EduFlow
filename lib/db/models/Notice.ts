@@ -1,4 +1,5 @@
-import { Schema, model, models, type InferSchemaType } from "mongoose";
+import mongoose, { type InferSchemaType } from "mongoose";
+const { Schema, model, models } = mongoose;
 import { NOTICE_CATEGORIES, NOTICE_STATUSES } from "@/types";
 
 const noticeSchema = new Schema(

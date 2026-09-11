@@ -11,7 +11,6 @@ import {
   CalendarDays,
   Megaphone,
   BarChart3,
-  Sparkles,
 } from "lucide-react";
 
 export interface NavItem {
@@ -32,7 +31,6 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Timetable", href: "/academics/timetable", icon: CalendarDays },
   { label: "Notices", href: "/notices", icon: Megaphone },
   { label: "Reports", href: "/reports", icon: BarChart3 },
-  { label: "AI Assistant", href: "/ai-assistant", icon: Sparkles },
 ];
 
 /**
@@ -43,7 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
  */
 const ROLE_NAV: Record<Role, string[]> = {
   ADMIN: NAV_ITEMS.map((item) => item.href),
-  TEACHER: ["/dashboard", "/attendance", "/exams", "/timetable", "/ai-assistant"],
+  TEACHER: ["/dashboard", "/attendance", "/exams", "/academics/timetable"],
   STAFF: ["/dashboard", "/students", "/admissions", "/notices"],
 };
 

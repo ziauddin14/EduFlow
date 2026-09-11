@@ -31,17 +31,17 @@ async function seedUsersAndTeacher() {
     User.findOneAndUpdate(
       { email: "admin@eduflow.demo" },
       { name: "Admin User", email: "admin@eduflow.demo", password: hashed, role: "ADMIN", status: "Active" },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" }
     ),
     User.findOneAndUpdate(
       { email: "teacher@eduflow.demo" },
       { name: "Demo Teacher", email: "teacher@eduflow.demo", password: hashed, role: "TEACHER", status: "Active" },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" }
     ),
     User.findOneAndUpdate(
       { email: "staff@eduflow.demo" },
       { name: "Demo Staff", email: "staff@eduflow.demo", password: hashed, role: "STAFF", status: "Active" },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" }
     ),
   ]);
 
@@ -56,7 +56,7 @@ async function seedUsersAndTeacher() {
       joiningDate: new Date("2022-08-01"),
       status: "Active",
     },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: "after" }
   );
 
   console.log(`Seeded users: ${admin.email}, ${teacherUser.email}, ${staff.email}`);
@@ -65,7 +65,7 @@ async function seedUsersAndTeacher() {
 async function seedClasses() {
   const created = [];
   for (const cls of CLASSES) {
-    const doc = await Class.findOneAndUpdate({ name: cls.name }, cls, { upsert: true, new: true });
+    const doc = await Class.findOneAndUpdate({ name: cls.name }, cls, { upsert: true, returnDocument: "after" });
     created.push(doc);
   }
   console.log(`Seeded ${created.length} classes.`);
@@ -79,7 +79,7 @@ async function seedSubjects(classes: Awaited<ReturnType<typeof seedClasses>>) {
       await Subject.findOneAndUpdate(
         { code: subject.code, class: cls._id },
         { name: subject.name, code: subject.code, class: cls._id, status: "Active" },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: "after" }
       );
       count += 1;
     }

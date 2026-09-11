@@ -4,10 +4,15 @@ A polished School Management System sales demo built by Softwaremine for private
 outreach. See `EduFlow MVP.docx` for the full product specification — this README covers
 local setup only.
 
+The current MVP scope is 11 modules: Dashboard, Student Management, Teacher & Staff
+Management, Admissions, Attendance, Fees, Classes & Subjects, Exams & Results, Timetable,
+Notices & Announcements, and Reports & Analytics. The AI School Assistant is postponed to
+a future phase and is not part of this build.
+
 ## Stack
 
 Next.js (App Router) · TypeScript · Tailwind CSS · shadcn/ui · MongoDB Atlas + Mongoose ·
-NextAuth (Credentials) · Recharts · Gemini API · Vercel
+NextAuth (Credentials) · Recharts · Vercel
 
 ## Getting started
 
@@ -21,7 +26,6 @@ NextAuth (Credentials) · Recharts · Gemini API · Vercel
    - `MONGODB_URI` — a MongoDB Atlas connection string
    - `NEXTAUTH_SECRET` — any long random string (`openssl rand -base64 32`)
    - `NEXTAUTH_URL` — `http://localhost:3000` for local dev
-   - `GEMINI_API_KEY` — a Gemini API key (needed for the AI Assistant module)
 
 3. Seed demo data:
 
@@ -57,7 +61,7 @@ Seeded by `npm run seed`. Password is the same for all three: **`Demo@123`**
 ## Project status
 
 Implementation follows the day-by-day plan in the spec (Foundation → Core Operations →
-Financial & Academic → Intelligence & Reporting → Polish/Testing/Deployment). Modules not
+Financial & Academic → Reporting & Analytics → Polish/Testing/Deployment). Modules not
 yet implemented show a placeholder page in the app so navigation and role-based access can
 be reviewed end-to-end from Day 1 onward.
 
