@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { UnauthorizedError, ForbiddenError } from "@/lib/auth/requireRole";
+import { NotFoundError, ConflictError } from "@/lib/services/errors";
 import type { ApiResponse } from "@/types";
 
 export function ok<T>(data: T, status = 200) {
@@ -27,8 +28,11 @@ export function handleApiError(error: unknown) {
   if (error instanceof ForbiddenError) {
     return fail(error.message, 403);
   }
-  if (error instanceof Error && error.message === "NOT_FOUND") {
-    return fail("Resource not found.", 404);
+  if (error instanceof NotFoundError) {
+    return fail(error.message, 404);
+  }
+  if (error instanceof ConflictError) {
+    return fail(error.message, 409);
   }
 
   console.error(error);

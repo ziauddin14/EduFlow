@@ -1,11 +1,25 @@
-import { ComingSoon } from "@/components/shared/coming-soon";
+import { PageHeader } from "@/components/shared/page-header";
+import { listClassesWithCounts } from "@/lib/services/class.service";
+import { listSubjects } from "@/lib/services/subject.service";
+import { listTeachersForSelect } from "@/lib/services/teacher.service";
+import { AcademicsTabs } from "@/components/academics/academics-tabs";
+import { serialize } from "@/lib/serialize";
 
-export default function AcademicsPage() {
+export default async function AcademicsPage() {
+  const [classes, subjects, teachers] = await Promise.all([
+    listClassesWithCounts(),
+    listSubjects({}),
+    listTeachersForSelect(),
+  ]);
+
   return (
-    <ComingSoon
-      title="Classes & Subjects"
-      description="Academic structure: classes, sections, and subjects."
-      note="Built on Day 2: class/section creation, subject creation, and teacher assignment."
-    />
+    <div>
+      <PageHeader title="Classes & Subjects" description="Academic structure: classes, sections, and subjects." />
+      <AcademicsTabs
+        initialClasses={serialize(classes)}
+        initialSubjects={serialize(subjects)}
+        teachers={serialize(teachers)}
+      />
+    </div>
   );
 }
