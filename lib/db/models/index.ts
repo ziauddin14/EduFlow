@@ -1,0 +1,12 @@
+export { User } from "./User";
+export { Student } from "./Student";
+export { Teacher } from "./Teacher";
+export { Class } from "./Class";
+export { Subject } from "./Subject";
+export { Admission } from "./Admission";
+export { Attendance } from "./Attendance";
+export { Fee } from "./Fee";
+export { Exam } from "./Exam";
+export { Result } from "./Result";
+export { Timetable } from "./Timetable";
+export { Notice } from "./Notice";
