@@ -6,6 +6,9 @@ import { listSubjects } from "@/lib/services/subject.service";
 import { serialize } from "@/lib/serialize";
 import { TeachersStaffTabs } from "@/components/teachers/teachers-staff-tabs";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function TeachersPage() {
   const [teachers, staff, classes, subjects] = await Promise.all([
     listTeachers(),

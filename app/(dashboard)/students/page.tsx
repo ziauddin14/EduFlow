@@ -9,6 +9,9 @@ import { StudentsPageClient } from "@/components/students/students-page-client";
 import type { StudentListItem } from "@/lib/types/students";
 import type { PaginatedResult } from "@/lib/validations/common";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function StudentsPage({
   searchParams,
 }: {

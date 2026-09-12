@@ -7,6 +7,9 @@ import { listTeachersForSelect, getTeacherClassIds } from "@/lib/services/teache
 import { serialize } from "@/lib/serialize";
 import { TimetablePageClient } from "@/components/timetable/timetable-page-client";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function TimetablePage() {
   const session = await getServerSession(authOptions);
   const allClasses = await listClassesWithCounts();

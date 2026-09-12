@@ -7,6 +7,9 @@ import { getTeacherClassIds } from "@/lib/services/teacher.service";
 import { serialize } from "@/lib/serialize";
 import { ResultsEntry } from "@/components/exams/results-entry";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function ExamResultsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);

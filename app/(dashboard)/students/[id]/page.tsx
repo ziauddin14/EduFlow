@@ -8,6 +8,9 @@ import { listClassesWithCounts } from "@/lib/services/class.service";
 import { serialize } from "@/lib/serialize";
 import { StudentProfile } from "@/components/students/student-profile";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function StudentDetailPage({
   params,
 }: {

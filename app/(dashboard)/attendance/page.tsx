@@ -6,6 +6,9 @@ import { getTeacherClassIds } from "@/lib/services/teacher.service";
 import { serialize } from "@/lib/serialize";
 import { AttendancePageClient } from "@/components/attendance/attendance-page-client";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function AttendancePage() {
   const session = await getServerSession(authOptions);
   const allClasses = await listClassesWithCounts();

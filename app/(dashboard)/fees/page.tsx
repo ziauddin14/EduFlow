@@ -7,6 +7,9 @@ import { FeesPageClient } from "@/components/fees/fees-page-client";
 import type { FeeListItem, FeeSummary } from "@/lib/types/fees";
 import type { PaginatedResult } from "@/lib/validations/common";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function FeesPage({
   searchParams,
 }: {

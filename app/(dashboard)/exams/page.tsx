@@ -8,6 +8,9 @@ import { getTeacherClassIds } from "@/lib/services/teacher.service";
 import { serialize } from "@/lib/serialize";
 import { ExamsPageClient } from "@/components/exams/exams-page-client";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function ExamsPage() {
   const session = await getServerSession(authOptions);
   const allClasses = await listClassesWithCounts();
