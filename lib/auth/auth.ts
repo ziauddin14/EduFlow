@@ -4,6 +4,15 @@ import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/db/mongodb";
 import { User } from "@/lib/db/models/User";
 
+// Ensure NEXTAUTH_URL is set for both build and runtime to prevent "Invalid URL" error
+if (typeof process.env.NEXTAUTH_URL === 'undefined' || process.env.NEXTAUTH_URL === '') {
+  if (process.env.VERCEL_URL) {
+    process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+  } else {
+    process.env.NEXTAUTH_URL = 'http://localhost:3000';
+  }
+}
+
 export const authOptions: AuthOptions = {
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
@@ -57,4 +66,6 @@ export const authOptions: AuthOptions = {
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
+  // Ensure NEXTAUTH_URL is properly set for production
+  // This prevents the "Invalid URL" error during build
 };
