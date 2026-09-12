@@ -5,6 +5,9 @@ import { listTeachersForSelect } from "@/lib/services/teacher.service";
 import { AcademicsTabs } from "@/components/academics/academics-tabs";
 import { serialize } from "@/lib/serialize";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function AcademicsPage() {
   const [classes, subjects, teachers] = await Promise.all([
     listClassesWithCounts(),

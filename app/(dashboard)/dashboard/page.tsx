@@ -9,6 +9,9 @@ import { getRecentPublishedNotices } from "@/lib/services/notice.service";
 import { serialize } from "@/lib/serialize";
 import { DashboardClient } from "@/components/dashboard/dashboard-client";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const [studentCount, teacherCount, todaysAttendance, feeSummary, activeAdmissions, upcomingExams, recentNotices] =
     await Promise.all([

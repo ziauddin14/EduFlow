@@ -5,6 +5,9 @@ import { authOptions } from "@/lib/auth/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "./login-form";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function LoginPage() {
   const session = await getServerSession(authOptions);
   if (session?.user) {

@@ -5,6 +5,9 @@ import { listNotices } from "@/lib/services/notice.service";
 import { serialize } from "@/lib/serialize";
 import { NoticesPageClient } from "@/components/notices/notices-page-client";
 
+// Force dynamic rendering to prevent build-time database connection issues
+export const dynamic = 'force-dynamic';
+
 export default async function NoticesPage() {
   const session = await getServerSession(authOptions);
   const role = session!.user.role;
