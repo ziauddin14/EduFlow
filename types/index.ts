@@ -40,6 +40,9 @@ export type NoticeCategory = (typeof NOTICE_CATEGORIES)[number];
 export const NOTICE_STATUSES = ["Draft", "Published"] as const;
 export type NoticeStatus = (typeof NOTICE_STATUSES)[number];
 
+export const NOTICE_AUDIENCES = ["Everyone", "Teachers", "Staff", "Students"] as const;
+export type NoticeAudience = (typeof NOTICE_AUDIENCES)[number];
+
 export interface ApiSuccess<T> {
   success: true;
   data: T;

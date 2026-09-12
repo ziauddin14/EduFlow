@@ -14,6 +14,11 @@ interface ListParams {
   status?: string;
 }
 
+export async function countActiveAdmissions() {
+  await connectToDatabase();
+  return Admission.countDocuments({ status: { $in: ["New", "Under Review"] } });
+}
+
 export async function listAdmissions(params: ListParams): Promise<PaginatedResult<unknown>> {
   await connectToDatabase();
 

@@ -42,7 +42,7 @@ export const NAV_ITEMS: NavItem[] = [
 const ROLE_NAV: Record<Role, string[]> = {
   ADMIN: NAV_ITEMS.map((item) => item.href),
   TEACHER: ["/dashboard", "/attendance", "/exams", "/academics/timetable"],
-  STAFF: ["/dashboard", "/students", "/admissions", "/notices"],
+  STAFF: ["/dashboard", "/students", "/admissions", "/notices", "/fees"],
 };
 
 export function getNavItemsForRole(role: Role): NavItem[] {

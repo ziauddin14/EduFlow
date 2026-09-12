@@ -47,3 +47,11 @@ export interface StudentDetailResponse {
   feeSummary: StudentFeeSummary;
   resultSummary: StudentResultSummaryItem[];
 }
+
+export interface StudentOption {
+  _id: string;
+  name: string;
+  studentId: string;
+  class: { _id: string; name: string } | null;
+  section: string;
+}

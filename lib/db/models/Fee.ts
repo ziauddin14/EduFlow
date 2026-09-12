@@ -20,6 +20,7 @@ const feeSchema = new Schema(
     dueDate: { type: Date, required: true },
     status: { type: String, enum: FEE_STATUSES, default: "Pending" },
     payments: { type: [paymentSchema], default: [] },
+    notes: { type: String, default: "" },
   },
   { timestamps: true }
 );

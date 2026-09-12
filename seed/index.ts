@@ -8,6 +8,12 @@ import { Subject } from "@/lib/db/models/Subject";
 import { Student } from "@/lib/db/models/Student";
 import { Admission } from "@/lib/db/models/Admission";
 import { Attendance } from "@/lib/db/models/Attendance";
+import { Fee } from "@/lib/db/models/Fee";
+import { Exam } from "@/lib/db/models/Exam";
+import { Result } from "@/lib/db/models/Result";
+import { Timetable } from "@/lib/db/models/Timetable";
+import { Notice } from "@/lib/db/models/Notice";
+import { computeGrade, computePercentage, computePassFail } from "@/lib/services/grading";
 import {
   createRng,
   pick,
@@ -16,9 +22,12 @@ import {
   randomPhone,
   randomAddress,
   pastDate,
+  futureDate,
   birthDateForAge,
   recentWeekdays,
   TEACHER_DESIGNATIONS,
+  FEE_TITLES,
+  NOTICES,
 } from "./data";
 
 const DEMO_PASSWORD = "Demo@123";
@@ -81,7 +90,7 @@ async function seedUsersAndDemoTeacher() {
   );
 
   console.log(`Seeded users: ${admin.email}, ${teacherUser.email}, ${staff.email}`);
-  return { demoTeacherUserId: teacherUser._id };
+  return { demoTeacherUserId: teacherUser._id, adminUserId: admin._id };
 }
 
 async function seedClasses() {
@@ -272,19 +281,206 @@ async function seedAttendance(
   console.log(`Seeded ${count} attendance records (${ATTENDANCE_DAYS} weekdays per class/section).`);
 }
 
+async function seedFees(students: Awaited<ReturnType<typeof seedStudents>>) {
+  let count = 0;
+
+  for (const student of students) {
+    for (const title of FEE_TITLES.slice(0, 2)) {
+      const totalAmount = 5000;
+      const scenario = rng();
+
+      let paidAmount: number;
+      let dueDate: Date;
+      if (scenario < 0.4) {
+        paidAmount = totalAmount;
+        dueDate = pastDate(rng, 90, 10);
+      } else if (scenario < 0.65) {
+        paidAmount = Math.round(totalAmount * (0.2 + rng() * 0.6));
+        dueDate = futureDate(rng, 30, 0);
+      } else if (scenario < 0.85) {
+        paidAmount = 0;
+        dueDate = futureDate(rng, 45, 5);
+      } else {
+        paidAmount = Math.round(totalAmount * rng() * 0.5);
+        dueDate = pastDate(rng, 60, 5);
+      }
+
+      const payments =
+        paidAmount > 0
+          ? [{ amount: paidAmount, date: pastDate(rng, 30, 0), method: pick(rng, ["Cash", "Card", "Bank Transfer"]) }]
+          : [];
+
+      const status =
+        paidAmount >= totalAmount ? "Paid" : dueDate.getTime() < Date.now() ? "Overdue" : paidAmount > 0 ? "Partial" : "Pending";
+
+      await Fee.findOneAndUpdate(
+        { student: student._id, title },
+        { student: student._id, title, totalAmount, paidAmount, dueDate, status, payments, notes: "" },
+        { upsert: true, returnDocument: "after" }
+      );
+      count += 1;
+    }
+  }
+
+  console.log(`Seeded ${count} fee records.`);
+}
+
+async function seedExamsAndResults(
+  classes: Awaited<ReturnType<typeof seedClasses>>,
+  subjects: Awaited<ReturnType<typeof seedSubjects>>,
+  students: Awaited<ReturnType<typeof seedStudents>>
+) {
+  let examCount = 0;
+  let resultCount = 0;
+
+  const examTemplates = [
+    { name: "Unit Test 1", type: "Unit Test", subjectCode: "MATH", maxMarks: 50, passingMarks: 17, daysAgo: 30 },
+    { name: "Midterm Examination", type: "Midterm", subjectCode: "ENG", maxMarks: 100, passingMarks: 33, daysAgo: 12 },
+  ];
+
+  for (const cls of classes) {
+    for (const template of examTemplates) {
+      const subject = subjects.find((s) => s.class.toString() === cls._id.toString() && s.code === template.subjectCode);
+      if (!subject) continue;
+
+      const exam = await Exam.findOneAndUpdate(
+        { name: template.name, class: cls._id, subject: subject._id },
+        {
+          name: template.name,
+          type: template.type,
+          class: cls._id,
+          subject: subject._id,
+          date: pastDate(rng, template.daysAgo, template.daysAgo - 2),
+          maxMarks: template.maxMarks,
+          passingMarks: template.passingMarks,
+        },
+        { upsert: true, returnDocument: "after" }
+      );
+      examCount += 1;
+
+      const roster = students.filter((s) => s.class.toString() === cls._id.toString());
+      for (const student of roster) {
+        const roll = rng();
+        const obtainedMarks =
+          roll < 0.8
+            ? randInt(rng, template.passingMarks, template.maxMarks)
+            : randInt(rng, 0, Math.max(0, template.passingMarks - 1));
+
+        const percentage = computePercentage(obtainedMarks, template.maxMarks);
+        const grade = computeGrade(percentage);
+        const status = computePassFail(obtainedMarks, template.passingMarks);
+
+        await Result.findOneAndUpdate(
+          { exam: exam._id, student: student._id },
+          { exam: exam._id, student: student._id, obtainedMarks, percentage, grade, status },
+          { upsert: true, returnDocument: "after" }
+        );
+        resultCount += 1;
+      }
+    }
+  }
+
+  console.log(`Seeded ${examCount} exams and ${resultCount} results.`);
+}
+
+const PERIOD_TIMES = [
+  { start: "08:00", end: "08:45" },
+  { start: "08:45", end: "09:30" },
+  { start: "09:45", end: "10:30" },
+  { start: "10:30", end: "11:15" },
+];
+const SECTION_OFFSET_MINUTES = 195; // 3h15m — section B's block starts after section A's ends, same teacher, no overlap.
+
+function addMinutes(time: string, minutes: number) {
+  const [h, m] = time.split(":").map(Number);
+  const total = h * 60 + m + minutes;
+  const hh = Math.floor(total / 60) % 24;
+  const mm = total % 60;
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+}
+
+async function seedTimetable(
+  classes: Awaited<ReturnType<typeof seedClasses>>,
+  subjects: Awaited<ReturnType<typeof seedSubjects>>,
+  teachers: Awaited<ReturnType<typeof seedTeachers>>
+) {
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as const;
+  let count = 0;
+
+  for (let classIndex = 0; classIndex < classes.length; classIndex++) {
+    const cls = classes[classIndex];
+    const classTeacher = teachers[classIndex % teachers.length];
+    const classSubjects = subjects.filter((s) => s.class.toString() === cls._id.toString());
+    if (classSubjects.length === 0) continue;
+
+    for (let sectionIndex = 0; sectionIndex < cls.sections.length; sectionIndex++) {
+      const section = cls.sections[sectionIndex];
+      const offset = sectionIndex * SECTION_OFFSET_MINUTES;
+
+      for (const day of days) {
+        const slots = PERIOD_TIMES.map((period, periodIndex) => ({
+          subject: classSubjects[periodIndex % classSubjects.length]._id,
+          teacher: classTeacher._id,
+          startTime: addMinutes(period.start, offset),
+          endTime: addMinutes(period.end, offset),
+          room: `Room ${100 + classIndex * 10 + sectionIndex}`,
+        }));
+
+        await Timetable.findOneAndUpdate(
+          { class: cls._id, section, day },
+          { class: cls._id, section, day, slots },
+          { upsert: true, returnDocument: "after" }
+        );
+        count += 1;
+      }
+    }
+  }
+
+  console.log(`Seeded timetable entries for ${count} class/section/day combinations.`);
+}
+
+async function seedNotices(adminUserId: mongoose.Types.ObjectId) {
+  let count = 0;
+
+  for (let i = 0; i < NOTICES.length; i++) {
+    const notice = NOTICES[i];
+    const status = i < NOTICES.length - 2 ? "Published" : "Draft";
+
+    await Notice.findOneAndUpdate(
+      { title: notice.title },
+      {
+        title: notice.title,
+        description: notice.description,
+        category: notice.category,
+        audience: notice.audience,
+        date: pastDate(rng, 45),
+        status,
+        createdBy: adminUserId,
+      },
+      { upsert: true, returnDocument: "after" }
+    );
+    count += 1;
+  }
+
+  console.log(`Seeded ${count} notices.`);
+}
+
 async function main() {
   await connectToDatabase();
 
-  const { demoTeacherUserId } = await seedUsersAndDemoTeacher();
+  const { demoTeacherUserId, adminUserId } = await seedUsersAndDemoTeacher();
   const classes = await seedClasses();
   const subjects = await seedSubjects(classes);
-  await seedTeachers(classes, subjects);
+  const teachers = await seedTeachers(classes, subjects);
   const students = await seedStudents(classes);
   await seedAdmissions(classes);
   await seedAttendance(classes, students, demoTeacherUserId);
+  await seedFees(students);
+  await seedExamsAndResults(classes, subjects, students);
+  await seedTimetable(classes, subjects, teachers);
+  await seedNotices(adminUserId);
 
   console.log("\nSeed complete. Demo login password for all accounts:", DEMO_PASSWORD);
-  console.log("Fee, exam, result, timetable, and notice data will be seeded alongside those modules (Day 3).");
 
   await mongoose.disconnect();
 }

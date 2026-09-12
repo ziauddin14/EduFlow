@@ -1,11 +1,20 @@
-import { ComingSoon } from "@/components/shared/coming-soon";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth/auth";
+import { PageHeader } from "@/components/shared/page-header";
+import { listNotices } from "@/lib/services/notice.service";
+import { serialize } from "@/lib/serialize";
+import { NoticesPageClient } from "@/components/notices/notices-page-client";
 
-export default function NoticesPage() {
+export default async function NoticesPage() {
+  const session = await getServerSession(authOptions);
+  const role = session!.user.role;
+
+  const notices = await listNotices({ viewerRole: role });
+
   return (
-    <ComingSoon
-      title="Notices"
-      description="School announcements and notices."
-      note="Built on Day 3: create/edit/delete/publish notices with categories."
-    />
+    <div>
+      <PageHeader title="Notices" description="School announcements and notices." />
+      <NoticesPageClient initialNotices={serialize(notices)} />
+    </div>
   );
 }

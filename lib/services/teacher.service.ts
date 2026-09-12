@@ -17,6 +17,11 @@ export async function listTeachersForSelect() {
   return Teacher.find({ status: "Active" }).select("name designation").sort({ name: 1 }).lean();
 }
 
+export async function countActiveTeachers() {
+  await connectToDatabase();
+  return Teacher.countDocuments({ status: "Active" });
+}
+
 /** Class IDs a teacher (by their User ID) is assigned to — used to scope TEACHER reads. */
 export async function getTeacherClassIds(userId: string): Promise<string[]> {
   await connectToDatabase();

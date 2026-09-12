@@ -1,12 +1,13 @@
 import mongoose, { type InferSchemaType } from "mongoose";
 const { Schema, model, models } = mongoose;
-import { NOTICE_CATEGORIES, NOTICE_STATUSES } from "@/types";
+import { NOTICE_CATEGORIES, NOTICE_STATUSES, NOTICE_AUDIENCES } from "@/types";
 
 const noticeSchema = new Schema(
   {
     title: { type: String, required: true, trim: true },
     description: { type: String, required: true },
     category: { type: String, enum: NOTICE_CATEGORIES, required: true },
+    audience: { type: String, enum: NOTICE_AUDIENCES, default: "Everyone" },
     date: { type: Date, required: true, default: Date.now },
     status: { type: String, enum: NOTICE_STATUSES, default: "Draft" },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", default: null },

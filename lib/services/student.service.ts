@@ -61,6 +61,25 @@ export async function listStudents(params: ListParams): Promise<PaginatedResult<
   };
 }
 
+export async function countStudents() {
+  await connectToDatabase();
+  return Student.countDocuments({ status: "Active" });
+}
+
+/** Lightweight active-student list for search/select widgets (Fees, Results, etc.). */
+export async function listStudentsForSelect(classId?: string) {
+  await connectToDatabase();
+
+  const filter: Record<string, unknown> = { status: "Active" };
+  if (classId) filter.class = classId;
+
+  return Student.find(filter)
+    .select("name studentId class section")
+    .populate("class", "name")
+    .sort({ name: 1 })
+    .lean();
+}
+
 async function assertValidClassAndSection(classId: string, section: string) {
   const cls = await Class.findById(classId).lean();
   if (!cls) {

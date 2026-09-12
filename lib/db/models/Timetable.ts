@@ -2,16 +2,13 @@ import mongoose, { type InferSchemaType } from "mongoose";
 const { Schema, model, models } = mongoose;
 import { WEEKDAYS } from "@/types";
 
-const slotSchema = new Schema(
-  {
-    subject: { type: Schema.Types.ObjectId, ref: "Subject", required: true },
-    teacher: { type: Schema.Types.ObjectId, ref: "Teacher", required: true },
-    startTime: { type: String, required: true },
-    endTime: { type: String, required: true },
-    room: { type: String, default: "" },
-  },
-  { _id: false }
-);
+const slotSchema = new Schema({
+  subject: { type: Schema.Types.ObjectId, ref: "Subject", required: true },
+  teacher: { type: Schema.Types.ObjectId, ref: "Teacher", required: true },
+  startTime: { type: String, required: true },
+  endTime: { type: String, required: true },
+  room: { type: String, default: "" },
+});
 
 const timetableSchema = new Schema(
   {
