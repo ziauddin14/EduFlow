@@ -222,29 +222,44 @@ async function seedStudents(classes: Awaited<ReturnType<typeof seedClasses>>) {
 
 async function seedAdmissions(classes: Awaited<ReturnType<typeof seedClasses>>) {
   const statuses = ["New", "Under Review", "Rejected"] as const;
-  let count = 0;
+  let inserted = 0;
+  let preserved = 0;
 
   for (let i = 1; i <= ADMISSION_COUNT; i++) {
     const applicantName = randomName(rng);
     const contact = randomPhone(rng);
 
+    // $setOnInsert only: an admission the app has since approved/reviewed/edited
+    // must never be reset back to random seed state on a later `npm run seed`.
+    // Missing records are still (re-)created deterministically. Existence is
+    // checked explicitly rather than relying on findOneAndUpdate's upsert
+    // result metadata, which this Mongoose version doesn't surface reliably.
+    const alreadyExists = await Admission.exists({ applicantName, contact });
+
     await Admission.findOneAndUpdate(
       { applicantName, contact },
       {
-        applicantName,
-        guardianName: randomName(rng),
-        contact,
-        desiredClass: pick(rng, classes)._id,
-        applicationDate: pastDate(rng, 45),
-        status: pick(rng, statuses),
-        notes: "",
+        $setOnInsert: {
+          applicantName,
+          guardianName: randomName(rng),
+          contact,
+          desiredClass: pick(rng, classes)._id,
+          applicationDate: pastDate(rng, 45),
+          status: pick(rng, statuses),
+          notes: "",
+        },
       },
       { upsert: true, returnDocument: "after" }
     );
-    count += 1;
+
+    if (alreadyExists) {
+      preserved += 1;
+    } else {
+      inserted += 1;
+    }
   }
 
-  console.log(`Seeded ${count} admissions.`);
+  console.log(`Seeded ${inserted} new admissions (${preserved} existing admissions preserved untouched).`);
 }
 
 async function seedAttendance(
